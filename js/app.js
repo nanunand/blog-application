@@ -1063,10 +1063,60 @@ function ExploreView() {
 
                 </div>
 
-                <select
-                    class="form-control"
-                    style="width:auto"
-                    id="sortSelect">
+               <div class="explore-filters">
+
+    <select class="form-control" id="categorySelect">
+        <option value="all">All Categories</option>
+        <option value="Technology">Technology</option>
+        <option value="Art">Art</option>
+        <option value="Lifestyle">Lifestyle</option>
+        <option value="Business">Business</option>
+        <option value="Education">Education</option>
+        <option value="Travel">Travel</option>
+        <option value="Health">Health</option>
+    </select>
+
+    <select class="form-control" id="sortSelect">
+        <option value="latest">Latest</option>
+        <option value="popular">Most Popular</option>
+        <option value="liked">Most Liked</option>
+    </select>
+
+</div>
+
+    <option value="all">
+        All Categories
+    </option>
+
+    <option value="Technology">
+        Technology
+    </option>
+
+    <option value="Art">
+        Art
+    </option>
+
+    <option value="Lifestyle">
+        Lifestyle
+    </option>
+
+    <option value="Business">
+        Business
+    </option>
+
+    <option value="Education">
+        Education
+    </option>
+
+    <option value="Travel">
+        Travel
+    </option>
+
+    <option value="Health">
+        Health
+    </option>
+
+</select>
 
                     <option value="latest">
                         Latest
@@ -2669,15 +2719,10 @@ function createBlogObject(
 
 function ProfileView() {
 
-    const user =
-        getCurrentUser();
+    const user = getCurrentUser();
 
-    const name =
-        user?.name || "User";
-
-    const email =
-        user?.email || "";
-
+    const name = user?.name || "User";
+    const email = user?.email || "";
     const avatar =
         user?.profileImage ||
         "https://i.pravatar.cc/150?img=12";
@@ -2686,8 +2731,7 @@ function ProfileView() {
         user?.bio ||
         "Software engineer and tech enthusiast.";
 
-    const articles =
-        getUserBlogs().length;
+    const articles = getUserBlogs().length;
 
     return `
 
@@ -2717,6 +2761,7 @@ function ProfileView() {
                 <img
                     src="${escapeHTML(avatar)}"
                     class="avatar"
+                    id="profileAvatar"
                     style="
                         width:100px;
                         height:100px;
@@ -2726,17 +2771,18 @@ function ProfileView() {
                     alt="${escapeHTML(name)}">
 
 
-                <h2>
+                <h2 id="profileName">
                     ${escapeHTML(name)}
                 </h2>
 
 
-                <p>
+                <p id="profileEmail">
                     ${escapeHTML(email)}
                 </p>
 
 
                 <p
+                    id="profileBio"
                     style="
                         color:var(--text-muted);
                         margin:1rem 0
@@ -2759,6 +2805,7 @@ function ProfileView() {
                         <strong>
                             ${articles}
                         </strong>
+                        <br>
                         Articles
                     </div>
 
@@ -2766,6 +2813,7 @@ function ProfileView() {
                         <strong>
                             1.2k
                         </strong>
+                        <br>
                         Followers
                     </div>
 
@@ -2773,6 +2821,7 @@ function ProfileView() {
                         <strong>
                             340
                         </strong>
+                        <br>
                         Following
                     </div>
 
@@ -2783,7 +2832,8 @@ function ProfileView() {
                     style="
                         display:flex;
                         gap:1rem;
-                        justify-content:center
+                        justify-content:center;
+                        flex-wrap:wrap
                     ">
 
                     <button
@@ -2810,10 +2860,7 @@ function ProfileView() {
         </div>
 
     `;
-
 }
-
-
 // =========================================================
 // SETTINGS
 // =========================================================
@@ -3204,7 +3251,320 @@ function BlogCard(blog) {
     `;
 
 }
+function editProfile() {
 
+    const user = getCurrentUser();
+
+    if (!user) {
+
+        showToast(
+            "Please login first",
+            "error"
+        );
+
+        return;
+    }
+
+    const currentName =
+        user.name || "";
+
+    const currentEmail =
+        user.email || "";
+
+    const currentBio =
+        user.bio ||
+        "Software engineer and tech enthusiast.";
+
+    const currentImage =
+        user.profileImage ||
+        "https://i.pravatar.cc/150?img=12";
+
+
+    const modal = $("#modalContent");
+
+    const overlay = $("#modalOverlay");
+
+    if (!modal || !overlay) {
+
+        // Fallback if modal does not exist
+
+        const name =
+            prompt(
+                "Enter your name:",
+                currentName
+            );
+
+        if (!name) return;
+
+        user.name = name.trim();
+
+        localStorage.setItem(
+            "user",
+            JSON.stringify(user)
+        );
+
+        showToast(
+            "Profile updated successfully",
+            "success"
+        );
+
+        router();
+
+        return;
+    }
+
+
+    modal.innerHTML = `
+
+        <div class="modal-header">
+
+            <h3>
+                Edit Profile
+            </h3>
+
+            <button
+                class="modal-close"
+                type="button">
+
+                &times;
+
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="form-group">
+
+                <label>
+                    Full Name
+                </label>
+
+                <input
+                    type="text"
+                    id="editProfileName"
+                    class="form-control"
+                    value="${escapeHTML(currentName)}"
+                    maxlength="100"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="editProfileEmail"
+                    class="form-control"
+                    value="${escapeHTML(currentEmail)}"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Profile Image URL
+                </label>
+
+                <input
+                    type="url"
+                    id="editProfileImage"
+                    class="form-control"
+                    value="${escapeHTML(currentImage)}"
+                    placeholder="https://example.com/profile.jpg">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Bio
+                </label>
+
+                <textarea
+                    id="editProfileBio"
+                    class="form-control"
+                    rows="4"
+                    maxlength="250"
+                    placeholder="Tell readers about yourself...">${escapeHTML(currentBio)}</textarea>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                class="btn btn-outline"
+                id="cancelEditProfile"
+                type="button">
+
+                Cancel
+
+            </button>
+
+
+            <button
+                class="btn btn-primary"
+                id="saveProfileBtn"
+                type="button">
+
+                Save Changes
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    overlay.classList.add("active");
+
+
+    $(".modal-close").onclick =
+        closeModal;
+
+    $("#cancelEditProfile").onclick =
+        closeModal;
+
+
+    $("#saveProfileBtn").onclick = () => {
+
+        const name =
+            $("#editProfileName")
+                ?.value
+                .trim();
+
+        const email =
+            $("#editProfileEmail")
+                ?.value
+                .trim()
+                .toLowerCase();
+
+        const image =
+            $("#editProfileImage")
+                ?.value
+                .trim();
+
+        const bio =
+            $("#editProfileBio")
+                ?.value
+                .trim();
+
+
+        if (!name) {
+
+            showToast(
+                "Name is required",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (!email) {
+
+            showToast(
+                "Email is required",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                .test(email)
+        ) {
+
+            showToast(
+                "Please enter a valid email address",
+                "error"
+            );
+
+            return;
+        }
+
+
+        user.name =
+            name;
+
+        user.email =
+            email;
+
+        user.bio =
+            bio ||
+            "Software engineer and tech enthusiast.";
+
+        user.profileImage =
+            image ||
+            "https://i.pravatar.cc/150?img=12";
+
+
+        localStorage.setItem(
+            "user",
+            JSON.stringify(user)
+        );
+
+
+        // Update author information
+        // for existing blogs belonging
+        // to this user
+
+        State.blogs.forEach(blog => {
+
+            if (
+                blog.authorEmail ===
+                currentEmail
+            ) {
+
+                blog.author =
+                    user.name;
+
+                blog.authorEmail =
+                    user.email;
+
+                blog.avatar =
+                    user.profileImage;
+
+            }
+
+        });
+
+
+        saveState();
+
+
+        closeModal();
+
+
+        showToast(
+            "Profile updated successfully!",
+            "success"
+        );
+
+
+        setTimeout(() => {
+
+            router();
+
+        }, 500);
+
+    };
+
+}
 
 // =========================================================
 // ATTACH EVENT LISTENERS
@@ -3652,7 +4012,15 @@ function attachEventListeners() {
             filterExploreBlogs;
 
     }
+const categorySelect =
+    $("#categorySelect");
 
+if (categorySelect) {
+
+    categorySelect.onchange =
+        filterExploreBlogs;
+
+}
 
     // =====================================================
     // SETTINGS
@@ -3684,43 +4052,57 @@ function attachEventListeners() {
 
     }
 
+// =====================================================
+// PROFILE
+// =====================================================
 
-    // =====================================================
-    // PROFILE
-    // =====================================================
+// EDIT PROFILE
 
-    const shareProfileBtn =
-        $("#shareProfileBtn");
+const editProfileBtn =
+    $("#editProfileBtn");
 
-    if (shareProfileBtn) {
+if (editProfileBtn) {
 
-        shareProfileBtn.onclick =
-            async () => {
+    editProfileBtn.onclick =
+        editProfile;
 
-                try {
+}
 
-                    await navigator.clipboard.writeText(
-                        window.location.href
-                    );
 
-                    showToast(
-                        "Profile link copied!",
-                        "success"
-                    );
+// SHARE PROFILE
 
-                } catch {
+const shareProfileBtn =
+    $("#shareProfileBtn");
 
-                    showToast(
-                        "Unable to copy profile link",
-                        "error"
-                    );
+if (shareProfileBtn) {
 
-                }
+    shareProfileBtn.onclick =
+        async () => {
 
-            };
+            try {
 
-    }
+                await navigator.clipboard.writeText(
+                    window.location.href
+                );
 
+                showToast(
+                    "Profile link copied!",
+                    "success"
+                );
+
+            } catch {
+
+                showToast(
+                    "Unable to copy profile link",
+                    "error"
+                );
+
+            }
+
+        };
+
+}
+   
 
     // =====================================================
     // READING PROGRESS
@@ -4506,6 +4888,9 @@ function filterExploreBlogs() {
         $("#sortSelect")
             ?.value || "latest";
 
+    const category =
+        $("#categorySelect")
+            ?.value || "all";
 
     let blogs =
         getPublishedBlogs();
@@ -4543,7 +4928,15 @@ function filterExploreBlogs() {
             );
 
     }
+if (category !== "all") {
 
+    blogs =
+        blogs.filter(
+            blog =>
+                blog.category === category
+        );
+
+}
 
     if (sort === "popular") {
 

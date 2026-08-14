@@ -497,3 +497,40 @@ tr:last-child td { border-bottom: none; }
     
     .table-container { overflow-x: auto; }
 }
+/* Explore Filters */
+.explore-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.explore-filters .form-control {
+    width: auto;
+    min-width: 180px;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #d9deea;
+    border-radius: 8px;
+    background: #fff;
+    color: #17233c;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.explore-filters .form-control:focus {
+    outline: none;
+    border-color: #4f46e5;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .explore-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .explore-filters .form-control {
+        width: 100%;
+    }
+}
