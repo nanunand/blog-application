@@ -3,7 +3,9 @@ const express = require("express");
 const {
     createBlog,
     getAllBlogs,
-    getMyBlogs
+    getMyBlogs,
+    updateBlog,
+    deleteBlog
 } = require("../controllers/blogController");
 
 const protect = require("../middleware/authMiddleware");
@@ -11,16 +13,34 @@ const protect = require("../middleware/authMiddleware");
 const router = express.Router();
 
 
-// Get all blogs
+// =============================
+// GET ALL BLOGS
+// =============================
 router.get("/", getAllBlogs);
 
 
-// Create blog
+// =============================
+// GET MY BLOGS
+// =============================
+router.get("/my-blogs", protect, getMyBlogs);
+
+
+// =============================
+// CREATE BLOG
+// =============================
 router.post("/", protect, createBlog);
 
 
-// Get logged-in user's blogs
-router.get("/my-blogs", protect, getMyBlogs);
+// =============================
+// UPDATE BLOG
+// =============================
+router.put("/:id", protect, updateBlog);
+
+
+// =============================
+// DELETE BLOG
+// =============================
+router.delete("/:id", protect, deleteBlog);
 
 
 module.exports = router;

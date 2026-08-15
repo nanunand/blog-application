@@ -817,24 +817,36 @@ const router = async () => {
 
     `;
 
-    setTimeout(() => {
+    setTimeout(async () => {
 
+      try {
+
+    // Render the page first
+    app.innerHTML = view(params);
+
+    // Then load dashboard blogs
+    if (route === "/dashboard") {
         try {
-
-            app.innerHTML =
-                view(params);
-
+            await loadDashboardBlogs();
         } catch (error) {
-
             console.error(
-                "View rendering error:",
+                "Dashboard blogs error:",
                 error
             );
-
-            app.innerHTML =
-                NotFoundView();
-
         }
+    }
+
+} catch (error) {
+
+    console.error(
+        "View rendering error:",
+        error
+    );
+
+    app.innerHTML =
+        NotFoundView();
+
+}
 
         attachEventListeners();
 
@@ -2007,7 +2019,83 @@ function DashboardView() {
 
 }
 
+// =========================================================
+// LOAD DASHBOARD BLOGS FROM BACKEND
+// =========================================================
 
+async function loadDashboardBlogs() {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.hash = "#/login";
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/blogs/my-blogs`,
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            if (response.status === 401) {
+
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+
+                window.location.hash = "#/login";
+                return;
+            }
+
+            throw new Error(
+                data.message || "Unable to load blogs"
+            );
+        }
+
+        // Store backend blogs in frontend state
+        State.blogs = data.blogs.map(blog => ({
+            ...blog,
+
+            // Convert MongoDB _id to your frontend id
+            id: blog._id,
+
+            // Convert createdAt to your existing date format
+            date: blog.createdAt
+                ? new Date(blog.createdAt).toLocaleDateString()
+                : ""
+        }));
+
+        // Re-render dashboard
+        const app =
+            document.getElementById("app");
+
+        if (app) {
+            app.innerHTML = DashboardView();
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard blogs error:",
+            error
+        );
+
+        showToast(
+            "Unable to load dashboard blogs",
+            "error"
+        );
+    }
+}
 // =========================================================
 // GET USER BLOGS
 // =========================================================
@@ -2026,7 +2114,67 @@ function getUserBlogs() {
     );
 
 }
+// =========================================================
+// FETCH LOGGED-IN USER'S BLOGS FROM BACKEND
+// =========================================================
 
+async function fetchMyBlogs() {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.hash = "#/login";
+        return [];
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/blogs/my-blogs`,
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            if (response.status === 401) {
+
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+
+                window.location.hash = "#/login";
+
+                return [];
+            }
+
+            throw new Error(
+                data.message || "Unable to fetch blogs"
+            );
+        }
+
+        return data.blogs || [];
+
+    } catch (error) {
+
+        console.error(
+            "Fetch my blogs error:",
+            error
+        );
+
+        showToast(
+            "Unable to load your blogs",
+            "error"
+        );
+
+        return [];
+    }
+}
 
 // =========================================================
 // MY BLOGS
